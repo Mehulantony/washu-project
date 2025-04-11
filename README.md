@@ -10,7 +10,7 @@ Our mission is to **empower researchers with AI assistance without compromising 
 
 ---
 
-## 🧠 Project Motivation
+## Project Motivation
 
 In modern research environments, there's a growing need for:
 - Instant access to scholarly knowledge
@@ -21,7 +21,7 @@ While tools like ChatGPT and Gemini offer generative capabilities, they lack rob
 
 ---
 
-## 🔐 Key Components
+## Key Components
 
 ### 1. **Certifier Framework**
 - Provides policy-based enforcement of trust between client and server
