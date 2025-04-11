@@ -40,7 +40,7 @@ While tools like ChatGPT and Gemini offer generative capabilities, they lack rob
 
 ---
 
-## 🛠 Architecture & Workflow
+## Architecture & Workflow
 
 ```text
 +-------------------------+
