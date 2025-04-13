@@ -1,0 +1,538 @@
+import React, { useState } from 'react';
+import { Search, BarChart4, LineChart, PieChart, ChevronDown, Sparkles, RefreshCw } from 'lucide-react';
+
+// Custom app logo component with Starbucks green
+const AppLogo = ({ size = 32, withText = true }) => {
+  // Starbucks color palette
+  const starbucksGreen = '#00704A';
+  const starbucksLightGreen = '#D4E9E2';
+  
+  return (
+    <div className="flex items-center">
+      <div className="flex-shrink-0 relative" style={{ width: size, height: size }}>
+        <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-green-600 to-green-800 shadow-lg" style={{ background: `linear-gradient(135deg, #1E3932 0%, ${starbucksGreen} 100%)` }}></div>
+        <div className="absolute inset-1 rounded-lg bg-white flex items-center justify-center">
+          <svg 
+            width={size * 0.6} 
+            height={size * 0.6} 
+            viewBox="0 0 24 24" 
+            fill="none" 
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path 
+              d="M3 5C3 3.89543 3.89543 3 5 3H19C20.1046 3 21 3.89543 21 5V19C21 20.1046 20.1046 21 19 21H5C3.89543 21 3 20.1046 3 19V5Z" 
+              stroke={starbucksGreen} 
+              strokeWidth="2"
+            />
+            <path 
+              d="M7 7L17 7" 
+              stroke={starbucksGreen} 
+              strokeWidth="2" 
+              strokeLinecap="round"
+            />
+            <path 
+              d="M7 12L17 12" 
+              stroke={starbucksGreen} 
+              strokeWidth="2" 
+              strokeLinecap="round"
+            />
+            <path 
+              d="M7 17L13 17" 
+              stroke={starbucksGreen} 
+              strokeWidth="2" 
+              strokeLinecap="round"
+            />
+          </svg>
+        </div>
+      </div>
+      {withText && (
+        <span className="ml-2 font-semibold text-xl" style={{ letterSpacing: '-0.02em', color: '#1D1D1F' }}>
+          Budget
+        </span>
+      )}
+    </div>
+  );
+};
+
+const App = () => {
+  const [queryText, setQueryText] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [isThinking, setIsThinking] = useState(false);
+  const [results, setResults] = useState(null);
+  const [visualizationType, setVisualizationType] = useState('bar');
+  const [showExamples, setShowExamples] = useState(true);
+  const [activeTab, setActiveTab] = useState('dashboard');
+
+  // Starbucks color palette
+  const starbucksGreen = '#00704A';
+  const starbucksLightGreen = '#D4E9E2';
+  const starbucksDarkGreen = '#1E3932';
+  const starbucksGold = '#C2A661';
+  const appleBlack = '#1D1D1F';
+  const appleDarkGray = '#86868B';
+
+  const handleQuerySubmit = (e) => {
+    e.preventDefault();
+    if (!queryText.trim()) return;
+
+    setIsLoading(true);
+    setIsThinking(true);
+    setShowExamples(false);
+    
+    // Simulate "thinking" state first
+    setTimeout(() => {
+      setIsThinking(false);
+      
+      // Then simulate data processing
+      setTimeout(() => {
+        setResults({
+          data: [
+            { department: "Department of Defense", year: "2023", amount: 816700000000 },
+            { department: "Department of Health and Human Services", year: "2023", amount: 1718000000000 },
+            { department: "Department of Education", year: "2023", amount: 79800000000 },
+            { department: "Department of Transportation", year: "2023", amount: 105000000000 },
+            { department: "Department of Veterans Affairs", year: "2023", amount: 301000000000 }
+          ],
+          insights: "The Department of Health and Human Services had the largest budget in 2023 at $1.72 trillion, followed by the Department of Defense at $816.7 billion. Education had the smallest budget among these departments at $79.8 billion.",
+          query_parameters: {
+            entity: "Multiple departments",
+            metric: "budget",
+            time_period: "2023",
+            comparison: false,
+            aggregation: null,
+            visualization: "bar"
+          }
+        });
+        setIsLoading(false);
+      }, 1500);
+    }, 800);
+  };
+
+  const formatCurrency = (amount) => {
+    if (amount >= 1000000000000) {
+      return `$${(amount / 1000000000000).toFixed(2)}T`;
+    } else if (amount >= 1000000000) {
+      return `$${(amount / 1000000000).toFixed(2)}B`;
+    } else if (amount >= 1000000) {
+      return `$${(amount / 1000000).toFixed(2)}M`;
+    } else {
+      return `$${amount.toLocaleString()}`;
+    }
+  };
+
+  const exampleQueries = [
+    "What was the Department of Defense budget for fiscal year 2023?",
+    "Compare education spending between 2020 and 2022",
+    "Show me the top 5 departments by budget allocation in 2023",
+    "What percentage of the federal budget went to healthcare in 2022?",
+    "How has infrastructure spending changed over the last 5 years?"
+  ];
+
+  return (
+    <div className="min-h-screen bg-gray-50 text-gray-900 font-sans" style={{ fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif" }}>
+      {/* Header with frosted glass effect */}
+      <header className="bg-white bg-opacity-80 backdrop-blur-md border-b border-gray-200 sticky top-0 z-10">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex justify-between items-center h-12 px-6">
+            <div className="flex items-center">
+              <AppLogo size={28} />
+            </div>
+            <nav className="hidden md:block">
+              <ul className="flex space-x-8">
+                <li>
+                  <button 
+                    className="text-sm font-medium px-1 py-1 transition-colors relative"
+                    onClick={() => setActiveTab('dashboard')}
+                    style={{ 
+                      color: activeTab === 'dashboard' ? starbucksGreen : appleBlack
+                    }}
+                  >
+                    Dashboard
+                    {activeTab === 'dashboard' && (
+                      <span className="absolute bottom-0 left-0 w-full h-0.5" style={{ backgroundColor: starbucksGreen }}></span>
+                    )}
+                  </button>
+                </li>
+                <li>
+                  <button 
+                    className="text-sm font-medium px-1 py-1 transition-colors relative"
+                    onClick={() => setActiveTab('history')}
+                    style={{ 
+                      color: activeTab === 'history' ? starbucksGreen : appleBlack
+                    }}
+                  >
+                    Query History
+                    {activeTab === 'history' && (
+                      <span className="absolute bottom-0 left-0 w-full h-0.5" style={{ backgroundColor: starbucksGreen }}></span>
+                    )}
+                  </button>
+                </li>
+                <li>
+                  <button 
+                    className="text-sm font-medium px-1 py-1 transition-colors relative"
+                    onClick={() => setActiveTab('about')}
+                    style={{ 
+                      color: activeTab === 'about' ? starbucksGreen : appleBlack
+                    }}
+                  >
+                    About
+                    {activeTab === 'about' && (
+                      <span className="absolute bottom-0 left-0 w-full h-0.5" style={{ backgroundColor: starbucksGreen }}></span>
+                    )}
+                  </button>
+                </li>
+              </ul>
+            </nav>
+            <div>
+              <button 
+                className="text-sm font-medium rounded-full px-4 py-1.5 text-white"
+                style={{ background: `linear-gradient(135deg, ${starbucksGreen} 0%, ${starbucksDarkGreen} 100%)` }}
+              >
+                Login
+              </button>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      {/* Main Content */}
+      <main className="max-w-7xl mx-auto pt-8 pb-16 px-4 sm:px-6 lg:px-8">
+        {activeTab === 'dashboard' && (
+          <>
+            {/* Hero Section with Logo */}
+            <section className="text-center mb-12">
+              <div className="flex justify-center mb-6">
+                <AppLogo size={64} withText={false} />
+              </div>
+              <h2 className="text-4xl font-semibold mb-2" style={{ letterSpacing: '-0.02em' }}>
+                Government Financial Budget Assistant
+              </h2>
+              <p className="text-lg text-gray-500">
+                Ask questions about U.S. government budget data using natural language
+              </p>
+            </section>
+
+            {/* Query Input Section */}
+            <div className="bg-white rounded-2xl shadow-sm p-6 mb-8">
+              <form onSubmit={handleQuerySubmit}>
+                <div className="flex flex-col md:flex-row gap-4">
+                  <div className="relative flex-grow">
+                    <input
+                      type="text"
+                      className="w-full py-3 pl-12 pr-4 bg-gray-100 border-none rounded-full focus:outline-none focus:ring-2 transition-all"
+                      placeholder="Ask a question about U.S. government budget data..."
+                      value={queryText}
+                      onChange={(e) => setQueryText(e.target.value)}
+                      style={{ 
+                        fontSize: '15px',
+                        outlineColor: starbucksGreen
+                      }}
+                    />
+                    <Search className="w-5 h-5 text-gray-400 absolute left-4 top-1/2 transform -translate-y-1/2" />
+                  </div>
+                  <div className="flex gap-2">
+                    <button
+                      type="submit"
+                      className="px-6 py-3 text-white rounded-full font-medium focus:outline-none transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      disabled={!queryText.trim() || isLoading}
+                      style={{ 
+                        backgroundColor: starbucksGreen,
+                        boxShadow: '0 2px 8px rgba(0, 112, 74, 0.3)'
+                      }}
+                    >
+                      {isLoading ? (
+                        <div className="flex items-center">
+                          <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+                          {isThinking ? 'Thinking...' : 'Processing...'}
+                        </div>
+                      ) : (
+                        'Submit'
+                      )}
+                    </button>
+                    <button
+                      type="button"
+                      className="px-6 py-3 rounded-full font-medium focus:outline-none transition-colors"
+                      onClick={() => {
+                        setQueryText('');
+                        setResults(null);
+                        setShowExamples(true);
+                      }}
+                      style={{ 
+                        backgroundColor: 'rgba(142, 142, 147, 0.12)',
+                        color: appleBlack
+                      }}
+                    >
+                      Clear
+                    </button>
+                  </div>
+                </div>
+              </form>
+            </div>
+
+            {showExamples && !results && !isLoading && (
+              <div className="bg-white rounded-2xl shadow-sm p-6 mb-8">
+                <h3 className="text-lg font-medium mb-4">Try asking</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  {exampleQueries.map((query, index) => (
+                    <div 
+                      key={index}
+                      className="py-3 px-4 bg-gray-100 rounded-xl cursor-pointer hover:bg-gray-200 transition-colors flex justify-between items-center"
+                      onClick={() => setQueryText(query)}
+                    >
+                      <span className="text-sm">{query}</span>
+                      <ChevronDown className="w-4 h-4 text-gray-400" style={{ transform: 'rotate(-90deg)' }} />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {isLoading && isThinking && (
+              <div className="bg-white rounded-2xl shadow-sm p-6 flex items-center">
+                <div className="relative mr-4">
+                  <div className="w-12 h-12 rounded-xl flex items-center justify-center" style={{ backgroundColor: starbucksLightGreen }}>
+                    <Sparkles className="w-6 h-6" style={{ color: starbucksGreen }} />
+                  </div>
+                  <div className="absolute -top-1 -right-1 w-3 h-3 rounded-full animate-pulse" style={{ backgroundColor: starbucksGreen }}></div>
+                </div>
+                <div>
+                  <h3 className="text-lg font-medium" style={{ letterSpacing: '-0.01em' }}>Gemini Model is thinking</h3>
+                  <p className="text-gray-500 text-sm">Analyzing your query and extracting parameters</p>
+                </div>
+              </div>
+            )}
+
+            {isLoading && !isThinking && (
+              <div className="flex justify-center items-center py-16">
+                <div className="w-8 h-8 relative">
+                  <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2" style={{ borderColor: starbucksGreen }}></div>
+                </div>
+              </div>
+            )}
+
+            {results && !isLoading && (
+              <div className="space-y-8">
+                {/* Results section */}
+                <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
+                  <div className="border-b border-gray-100 p-6">
+                    <div className="flex justify-between items-center">
+                      <h3 className="text-2xl font-semibold" style={{ letterSpacing: '-0.02em' }}>Results</h3>
+                      <div className="flex space-x-2">
+                        <button 
+                          className="p-2 rounded-full transition-colors"
+                          onClick={() => setVisualizationType('bar')}
+                          style={{ 
+                            backgroundColor: visualizationType === 'bar' ? starbucksLightGreen : '#f5f5f7', 
+                            color: visualizationType === 'bar' ? starbucksGreen : appleDarkGray
+                          }}
+                        >
+                          <BarChart4 className="w-5 h-5" />
+                        </button>
+                        <button 
+                          className="p-2 rounded-full transition-colors"
+                          onClick={() => setVisualizationType('line')}
+                          style={{ 
+                            backgroundColor: visualizationType === 'line' ? starbucksLightGreen : '#f5f5f7', 
+                            color: visualizationType === 'line' ? starbucksGreen : appleDarkGray
+                          }}
+                        >
+                          <LineChart className="w-5 h-5" />
+                        </button>
+                        <button 
+                          className="p-2 rounded-full transition-colors"
+                          onClick={() => setVisualizationType('pie')}
+                          style={{ 
+                            backgroundColor: visualizationType === 'pie' ? starbucksLightGreen : '#f5f5f7', 
+                            color: visualizationType === 'pie' ? starbucksGreen : appleDarkGray
+                          }}
+                        >
+                          <PieChart className="w-5 h-5" />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Chart section */}
+                  <div className="p-6 border-b border-gray-100">
+                    <div className="h-64 bg-gray-50 rounded-xl flex justify-center items-center mb-6">
+                      <div className="text-center text-gray-400">
+                        <BarChart4 className="w-16 h-16 mx-auto mb-2 text-gray-200" />
+                        <p className="text-sm">Chart visualization would appear here</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Insights and Parameters section */}
+                  <div className="p-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                      <div>
+                        <h4 className="text-lg font-medium mb-3">Insights</h4>
+                        <p className="text-gray-700 text-sm leading-relaxed">{results.insights}</p>
+                      </div>
+                      <div>
+                        <h4 className="text-lg font-medium mb-3">Query Parameters</h4>
+                        <div className="bg-gray-50 rounded-xl p-4 space-y-2">
+                          {Object.entries(results.query_parameters).map(([key, value]) => (
+                            value && (
+                              <div key={key} className="flex justify-between">
+                                <span className="text-gray-500 text-sm capitalize">{key.replace('_', ' ')}:</span>
+                                <span className="text-gray-900 text-sm font-medium">{value.toString()}</span>
+                              </div>
+                            )
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Data table */}
+                    <div>
+                      <h4 className="text-lg font-medium mb-4">Data</h4>
+                      <div className="bg-gray-50 rounded-xl p-4 overflow-hidden">
+                        <div className="overflow-x-auto">
+                          <table className="min-w-full divide-y divide-gray-200 bg-white rounded-lg overflow-hidden">
+                            <thead className="bg-gray-50">
+                              <tr>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Department</th>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Year</th>
+                                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
+                              </tr>
+                            </thead>
+                            <tbody className="bg-white divide-y divide-gray-200">
+                              {results.data.map((item, index) => (
+                                <tr key={index}>
+                                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{item.department}</td>
+                                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{item.year}</td>
+                                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right font-medium">{formatCurrency(item.amount)}</td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+          </>
+        )}
+
+        {activeTab === 'history' && (
+          <div>
+            <div className="flex items-center mb-6">
+              <AppLogo size={36} withText={false} />
+              <h2 className="text-3xl font-semibold ml-4" style={{ letterSpacing: '-0.02em' }}>Query History</h2>
+            </div>
+            <div className="bg-white rounded-2xl shadow-sm p-6">
+              <div className="space-y-4">
+                <div className="p-4 border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors cursor-pointer">
+                  <div className="flex justify-between mb-2">
+                    <h3 className="font-medium">What was the Department of Defense budget for fiscal year 2023?</h3>
+                    <span className="text-sm text-gray-500">April 12, 2025</span>
+                  </div>
+                  <p className="text-gray-700 text-sm">The Department of Defense had a budget of $816.7 billion for fiscal year 2023.</p>
+                </div>
+                <div className="p-4 border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors cursor-pointer">
+                  <div className="flex justify-between mb-2">
+                    <h3 className="font-medium">Compare education spending between 2020 and 2022</h3>
+                    <span className="text-sm text-gray-500">April 11, 2025</span>
+                  </div>
+                  <p className="text-gray-700 text-sm">Education spending increased by 5.7% from $72.3 billion in 2020 to $76.4 billion in 2022.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'about' && (
+          <div>
+            <div className="flex items-center mb-6">
+              <AppLogo size={36} withText={false} />
+              <h2 className="text-3xl font-semibold ml-4" style={{ letterSpacing: '-0.02em' }}>About</h2>
+            </div>
+            <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
+              <div className="p-6 border-b border-gray-100">
+                <div className="flex items-center">
+                  <div className="w-12 h-12 rounded-full flex items-center justify-center mr-4" style={{ backgroundColor: starbucksLightGreen }}>
+                    <Sparkles className="w-6 h-6" style={{ color: starbucksGreen }} />
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-semibold">Powered by Gemini LLM</h3>
+                    <p className="text-gray-500 text-sm">
+                      This system leverages Google's Gemini Large Language Model
+                    </p>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="p-6">
+                <p className="text-gray-700 text-sm leading-relaxed mb-6">
+                  The Government Financial Budget Assistant is a powerful tool designed for government finance officers and analysts to query and analyze U.S. government budget data using natural language.
+                </p>
+                
+                <h3 className="text-lg font-medium mb-4">How It Works</h3>
+                <p className="text-gray-700 text-sm leading-relaxed mb-6">
+                  The system uses a three-component architecture:
+                </p>
+                <div className="space-y-4 mb-6">
+                  <div className="flex">
+                    <div className="flex-shrink-0 h-6 w-6 rounded-full flex items-center justify-center mr-3" 
+                    style={{ backgroundColor: starbucksLightGreen }}>
+                      <span className="text-sm" style={{ color: starbucksGreen }}>1</span>
+                    </div>
+                    <div>
+                      <h4 className="text-sm font-medium">MCP Client (Frontend)</h4>
+                      <p className="text-sm text-gray-600">The user interface where you can submit natural language queries and view visualized results.</p>
+                    </div>
+                  </div>
+                  <div className="flex">
+                    <div className="flex-shrink-0 h-6 w-6 rounded-full flex items-center justify-center mr-3"
+                    style={{ backgroundColor: starbucksLightGreen }}>
+                      <span className="text-sm" style={{ color: starbucksGreen }}>2</span>
+                    </div>
+                    <div>
+                      <h4 className="text-sm font-medium">Gemini API Client</h4>
+                      <p className="text-sm text-gray-600">Processes your natural language queries using Google's Gemini LLM to extract structured parameters.</p>
+                    </div>
+                  </div>
+                  <div className="flex">
+                    <div className="flex-shrink-0 h-6 w-6 rounded-full flex items-center justify-center mr-3"
+                    style={{ backgroundColor: starbucksLightGreen }}>
+                      <span className="text-sm" style={{ color: starbucksGreen }}>3</span>
+                    </div>
+                    <div>
+                      <h4 className="text-sm font-medium">MCP Server (Backend)</h4>
+                      <p className="text-sm text-gray-600">Retrieves and processes budget data from various U.S. government data sources based on the extracted parameters.</p>
+                    </div>
+                  </div>
+                </div>
+                
+                <h3 className="text-lg font-medium mb-4">Data Sources</h3>
+                <p className="text-gray-700 text-sm leading-relaxed">
+                  The Government Financial Budget Assistant integrates with several authoritative U.S. government budget data sources including USASpending.gov API, Treasury.gov APIs, Data.gov Budget APIs, and Federal Reserve Economic Data (FRED).
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+      </main>
+
+      {/* Footer */}
+      <footer className="bg-white py-8 border-t border-gray-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="md:flex md:justify-between md:items-center">
+            <div className="flex items-center justify-center md:justify-start mb-4 md:mb-0">
+              <AppLogo size={24} />
+              <span className="text-sm text-gray-500 ml-4">© 2025</span>
+            </div>
+            <div className="text-center md:text-right text-sm text-gray-500">
+              Powered by Gemini LLM and Model Context Protocol
+            </div>
+          </div>
+        </div>
+      </footer>
+    </div>
+  );
+};
+
+export default App;
