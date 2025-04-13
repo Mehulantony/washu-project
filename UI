@@ -1,0 +1,548 @@
+import React, { useState, useEffect } from 'react';
+import { Search, BarChart4, LineChart, PieChart, ArrowRight, History, Info, User, Settings, ChevronDown, Sparkles, RefreshCw, MessageSquare, X, Maximize2, Download } from 'lucide-react';
+
+// Main App Component
+const App = () => {
+  const [queryText, setQueryText] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [isThinking, setIsThinking] = useState(false);
+  const [results, setResults] = useState(null);
+  const [visualizationType, setVisualizationType] = useState('bar');
+  const [showDropdown, setShowDropdown] = useState(false);
+  const [currentPage, setCurrentPage] = useState('dashboard');
+  const [aiInsights, setAiInsights] = useState([]);
+  const [showAiPanel, setShowAiPanel] = useState(false);
+  const [aiMessage, setAiMessage] = useState('');
+  const [aiConversation, setAiConversation] = useState([
+    { role: 'assistant', content: 'Hello! I can help you analyze government budget data. Ask me anything about spending patterns, department budgets, or fiscal trends.' }
+  ]);
+  const [isGeneratingInsights, setIsGeneratingInsights] = useState(false);
+  const [relatedQueries, setRelatedQueries] = useState([]);
+
+  const handleQuerySubmit = (e) => {
+    e.preventDefault();
+    if (!queryText.trim()) return;
+
+    setIsLoading(true);
+    setIsThinking(true);
+    
+    // Add the user message to the conversation
+    setAiConversation(prev => [...prev, { role: 'user', content: queryText }]);
+    
+    // Simulate API call with brief thinking state first
+    setTimeout(() => {
+      setIsThinking(false);
+      
+      // Then simulate loading the actual data after "thinking"
+      setTimeout(() => {
+        const mockResults = {
+          data: [
+            { department: "Department of Defense", year: "2023", amount: 816700000000 },
+            { department: "Department of Health and Human Services", year: "2023", amount: 1718000000000 },
+            { department: "Department of Education", year: "2023", amount: 79800000000 },
+            { department: "Department of Transportation", year: "2023", amount: 105000000000 },
+            { department: "Department of Veterans Affairs", year: "2023", amount: 301000000000 }
+          ],
+          insights: "The Department of Health and Human Services had the largest budget in 2023 at $1.72 trillion, followed by the Department of Defense at $816.7 billion. Education had the smallest budget among these departments at $79.8 billion.",
+          query_parameters: {
+            entity: "Multiple departments",
+            metric: "budget",
+            time_period: "2023",
+            comparison: false,
+            aggregation: null,
+            visualization: "bar"
+          }
+        };
+        
+        setResults(mockResults);
+        
+        // Add AI response to conversation
+        setAiConversation(prev => [...prev, { 
+          role: 'assistant', 
+          content: `I've analyzed the 2023 budget data across major departments. The Department of Health and Human Services had the largest allocation at $1.72 trillion, which is over twice the Department of Defense budget of $816.7 billion. Would you like to explore any specific department in more detail?`
+        }]);
+        
+        // Generate AI insights
+        setIsGeneratingInsights(true);
+        setTimeout(() => {
+          setAiInsights([
+            "Healthcare spending represents approximately 57% of the displayed departmental budgets, indicating its major priority in federal spending.",
+            "The Department of Defense budget ($816.7B) is approximately 10 times larger than the Department of Education budget ($79.8B).",
+            "These five departments represent approximately 63% of the total federal discretionary budget for 2023.",
+            "Veterans Affairs funding has increased 49.8% since 2019, showing a growing commitment to veterans' services."
+          ]);
+          
+          // Set related questions
+          setRelatedQueries([
+            "How has Department of Defense spending changed since 2020?",
+            "What percentage of HHS budget goes to Medicare and Medicaid?",
+            "Compare education and transportation funding over the last 5 years",
+            "Which department saw the largest percentage increase in 2023?"
+          ]);
+          
+          setIsGeneratingInsights(false);
+          setIsLoading(false);
+        }, 1500);
+      }, 1500);
+    }, 800);
+  };
+
+  const formatCurrency = (amount) => {
+    // Format large currency amounts into billions or trillions
+    if (amount >= 1000000000000) {
+      return `$${(amount / 1000000000000).toFixed(2)}T`;
+    } else if (amount >= 1000000000) {
+      return `$${(amount / 1000000000).toFixed(2)}B`;
+    } else if (amount >= 1000000) {
+      return `$${(amount / 1000000).toFixed(2)}M`;
+    } else {
+      return `$${amount.toLocaleString()}`;
+    }
+  };
+
+  const handleSendMessage = () => {
+    if (!aiMessage.trim()) return;
+    
+    // Add user message to conversation
+    setAiConversation(prev => [...prev, { role: 'user', content: aiMessage }]);
+    setAiMessage('');
+    
+    // Simulate AI response
+    setTimeout(() => {
+      setAiConversation(prev => [...prev, { 
+        role: 'assistant', 
+        content: "I'm analyzing that question now. The Department of Defense budget has shown a steady increase over the past few years, with approximately a 4.4% increase from 2022 to 2023. Would you like to see a year-by-year breakdown of this trend?"
+      }]);
+    }, 1000);
+  };
+
+  const exampleQueries = [
+    "What was the Department of Defense budget for fiscal year 2023?",
+    "Compare education spending between 2020 and 2022",
+    "Show me the top 5 departments by budget allocation in 2023",
+    "What percentage of the federal budget went to healthcare in 2022?",
+    "How has infrastructure spending changed over the last 5 years?"
+  ];
+
+  return (
+    <div className="min-h-screen bg-gray-50 text-gray-900 font-sans">
+      {/* Header */}
+      <header className="bg-white shadow-sm sticky top-0 z-10">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-16">
+            <div className="flex items-center">
+              <h1 className="text-xl font-medium">
+                Government Financial Budget Assistant
+              </h1>
+            </div>
+            <div className="flex items-center space-x-4">
+              <button 
+                className={`p-2 rounded-full hover:bg-gray-100 transition-colors ${showAiPanel ? 'bg-blue-50 text-blue-500' : ''}`}
+                onClick={() => setShowAiPanel(!showAiPanel)}
+              >
+                <MessageSquare className="w-5 h-5" />
+              </button>
+              <button 
+                className="p-2 rounded-full hover:bg-gray-100 transition-colors"
+                onClick={() => setCurrentPage('settings')}
+              >
+                <Settings className="w-5 h-5 text-gray-500" />
+              </button>
+              <div className="relative">
+                <button 
+                  className="flex items-center space-x-2 p-2 rounded-full hover:bg-gray-100 transition-colors"
+                  onClick={() => setShowDropdown(!showDropdown)}
+                >
+                  <User className="w-5 h-5 text-gray-500" />
+                  <ChevronDown className="w-4 h-4 text-gray-500" />
+                </button>
+                {showDropdown && (
+                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-1 z-10">
+                    <a href="#" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                      Profile
+                    </a>
+                    <a href="#" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                      Sign out
+                    </a>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      {/* Sidebar */}
+      <div className="flex h-screen pt-16">
+        <div className="w-64 bg-white shadow-sm border-r border-gray-200 fixed h-full">
+          <nav className="mt-8">
+            <div className="px-4 mb-6">
+              <button 
+                className={`flex items-center justify-center w-full py-3 px-4 rounded-full ${currentPage === 'dashboard' ? 'bg-blue-500 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'} transition-colors`}
+                onClick={() => setCurrentPage('dashboard')}
+              >
+                <Search className="w-5 h-5 mr-2" />
+                <span>New Query</span>
+              </button>
+            </div>
+            <ul className="space-y-1 px-2">
+              <li>
+                <button 
+                  className={`flex items-center w-full px-4 py-2 rounded-lg ${currentPage === 'history' ? 'bg-gray-100 text-blue-600' : 'text-gray-700 hover:bg-gray-50'} transition-colors`}
+                  onClick={() => setCurrentPage('history')}
+                >
+                  <History className="w-5 h-5 mr-3" />
+                  <span>Query History</span>
+                </button>
+              </li>
+              <li>
+                <button 
+                  className={`flex items-center w-full px-4 py-2 rounded-lg ${currentPage === 'about' ? 'bg-gray-100 text-blue-600' : 'text-gray-700 hover:bg-gray-50'} transition-colors`}
+                  onClick={() => setCurrentPage('about')}
+                >
+                  <Info className="w-5 h-5 mr-3" />
+                  <span>About</span>
+                </button>
+              </li>
+            </ul>
+          </nav>
+        </div>
+
+        {/* Main Content */}
+        <main className={`flex-1 ml-64 p-8 ${showAiPanel ? 'mr-96' : ''} transition-all duration-300`}>
+          {currentPage === 'dashboard' && (
+            <div className="max-w-4xl mx-auto">
+              <div className="bg-white rounded-2xl shadow-sm p-6 mb-8">
+                <h2 className="text-2xl font-medium mb-6">Ask a question about U.S. government budget data</h2>
+                <form onSubmit={handleQuerySubmit}>
+                  <div className="flex items-center relative">
+                    <input
+                      type="text"
+                      className="w-full py-3 pl-12 pr-4 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                      placeholder="e.g. What was the Department of Defense budget for fiscal year 2023?"
+                      value={queryText}
+                      onChange={(e) => setQueryText(e.target.value)}
+                    />
+                    <Search className="w-5 h-5 text-gray-400 absolute left-4" />
+                    <button
+                      type="submit"
+                      className="ml-4 px-6 py-3 bg-blue-500 text-white rounded-lg font-medium hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+                      disabled={!queryText.trim() || isLoading}
+                    >
+                      {isLoading ? (
+                        <>
+                          <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+                          {isThinking ? 'Thinking...' : 'Processing...'}
+                        </>
+                      ) : (
+                        <>
+                          <Sparkles className="w-4 h-4 mr-2" />
+                          Submit
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </form>
+              </div>
+
+              {!results && !isLoading && (
+                <div className="bg-white rounded-2xl shadow-sm p-6">
+                  <h3 className="text-lg font-medium mb-4">Try asking</h3>
+                  <div className="space-y-3">
+                    {exampleQueries.map((query, index) => (
+                      <div 
+                        key={index}
+                        className="py-3 px-4 bg-gray-50 rounded-lg cursor-pointer hover:bg-gray-100 transition-colors flex justify-between items-center"
+                        onClick={() => setQueryText(query)}
+                      >
+                        <span>{query}</span>
+                        <ArrowRight className="w-4 h-4 text-gray-400" />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {isLoading && isThinking && (
+                <div className="bg-white rounded-2xl shadow-sm p-6 flex items-center">
+                  <div className="relative">
+                    <div className="w-16 h-16 rounded-xl bg-blue-100 flex items-center justify-center">
+                      <Sparkles className="w-8 h-8 text-blue-500" />
+                    </div>
+                    <div className="absolute -top-1 -right-1 w-5 h-5 bg-blue-500 rounded-full animate-pulse"></div>
+                  </div>
+                  <div className="ml-6">
+                    <h3 className="text-lg font-medium">Gemini Model is thinking...</h3>
+                    <p className="text-gray-600">Analyzing your query and extracting structured parameters</p>
+                  </div>
+                </div>
+              )}
+
+              {isLoading && !isThinking && (
+                <div className="flex justify-center items-center h-64">
+                  <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+                </div>
+              )}
+
+              {results && !isLoading && (
+                <div className="space-y-6">
+                  <div className="bg-white rounded-2xl shadow-sm p-6">
+                    <div className="mb-6 flex justify-between items-center">
+                      <h3 className="text-xl font-medium">Results</h3>
+                      <div className="flex space-x-2">
+                        <button 
+                          className={`p-2 rounded ${visualizationType === 'bar' ? 'bg-blue-100 text-blue-600' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'} transition-colors`}
+                          onClick={() => setVisualizationType('bar')}
+                        >
+                          <BarChart4 className="w-5 h-5" />
+                        </button>
+                        <button 
+                          className={`p-2 rounded ${visualizationType === 'line' ? 'bg-blue-100 text-blue-600' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'} transition-colors`}
+                          onClick={() => setVisualizationType('line')}
+                        >
+                          <LineChart className="w-5 h-5" />
+                        </button>
+                        <button 
+                          className={`p-2 rounded ${visualizationType === 'pie' ? 'bg-blue-100 text-blue-600' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'} transition-colors`}
+                          onClick={() => setVisualizationType('pie')}
+                        >
+                          <PieChart className="w-5 h-5" />
+                        </button>
+                        <button className="p-2 rounded bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors">
+                          <Download className="w-5 h-5" />
+                        </button>
+                        <button className="p-2 rounded bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors">
+                          <Maximize2 className="w-5 h-5" />
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-3 gap-8">
+                      <div className="col-span-2">
+                        <div className="h-64 bg-gray-50 rounded-xl flex justify-center items-center mb-6">
+                          {/* This would be replaced with an actual chart component */}
+                          <BarChart4 className="w-20 h-20 text-gray-300" />
+                        </div>
+
+                        <div className="overflow-hidden shadow-sm border border-gray-100 rounded-xl">
+                          <table className="min-w-full divide-y divide-gray-200">
+                            <thead className="bg-gray-50">
+                              <tr>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Department</th>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Year</th>
+                                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
+                              </tr>
+                            </thead>
+                            <tbody className="bg-white divide-y divide-gray-200">
+                              {results.data.map((item, index) => (
+                                <tr key={index}>
+                                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{item.department}</td>
+                                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{item.year}</td>
+                                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">{formatCurrency(item.amount)}</td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+
+                      <div className="col-span-1">
+                        <div className="bg-gray-50 rounded-xl p-6 h-full">
+                          <h4 className="font-medium text-lg mb-4">Insights</h4>
+                          <p className="text-gray-700 mb-6">{results.insights}</p>
+
+                          <h4 className="font-medium text-lg mb-4">Query Parameters</h4>
+                          <div className="space-y-2">
+                            {Object.entries(results.query_parameters).map(([key, value]) => (
+                              value && (
+                                <div key={key} className="flex justify-between">
+                                  <span className="text-gray-500 capitalize">{key.replace('_', ' ')}:</span>
+                                  <span className="text-gray-900 font-medium">{value.toString()}</span>
+                                </div>
+                              )
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* AI Model Insights Section */}
+                  <div className="bg-white rounded-2xl shadow-sm p-6">
+                    <div className="flex items-center mb-6">
+                      <div className="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center mr-4">
+                        <Sparkles className="w-5 h-5 text-blue-600" />
+                      </div>
+                      <div>
+                        <h3 className="text-xl font-medium">Gemini Model Insights</h3>
+                        <p className="text-gray-600 text-sm">AI-powered analysis of the budget data</p>
+                      </div>
+                      {isGeneratingInsights && (
+                        <div className="ml-auto flex items-center">
+                          <RefreshCw className="w-4 h-4 text-blue-500 animate-spin mr-2" />
+                          <span className="text-sm text-gray-500">Generating insights...</span>
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      {aiInsights.map((insight, index) => (
+                        <div key={index} className="p-4 bg-blue-50 rounded-xl">
+                          <p className="text-gray-800">{insight}</p>
+                        </div>
+                      ))}
+                    </div>
+                    
+                    {/* Related Queries Section */}
+                    <div className="mt-6">
+                      <h4 className="font-medium text-lg mb-3">You might also want to ask:</h4>
+                      <div className="space-y-2">
+                        {relatedQueries.map((query, index) => (
+                          <div 
+                            key={index}
+                            className="py-2 px-4 bg-gray-50 rounded-lg cursor-pointer hover:bg-gray-100 transition-colors inline-block mr-2"
+                            onClick={() => setQueryText(query)}
+                          >
+                            {query}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {currentPage === 'history' && (
+            <div className="max-w-4xl mx-auto">
+              <div className="bg-white rounded-2xl shadow-sm p-6">
+                <h2 className="text-2xl font-medium mb-6">Query History</h2>
+                <div className="space-y-4">
+                  <div className="p-4 border border-gray-100 rounded-xl hover:bg-gray-50 transition-colors cursor-pointer">
+                    <div className="flex justify-between mb-2">
+                      <h3 className="font-medium">What was the Department of Defense budget for fiscal year 2023?</h3>
+                      <span className="text-sm text-gray-500">April 12, 2025</span>
+                    </div>
+                    <p className="text-gray-700 text-sm">The Department of Defense had a budget of $816.7 billion for fiscal year 2023.</p>
+                  </div>
+                  <div className="p-4 border border-gray-100 rounded-xl hover:bg-gray-50 transition-colors cursor-pointer">
+                    <div className="flex justify-between mb-2">
+                      <h3 className="font-medium">Compare education spending between 2020 and 2022</h3>
+                      <span className="text-sm text-gray-500">April 11, 2025</span>
+                    </div>
+                    <p className="text-gray-700 text-sm">Education spending increased by 5.7% from $72.3 billion in 2020 to $76.4 billion in 2022.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {currentPage === 'about' && (
+            <div className="max-w-4xl mx-auto">
+              <div className="bg-white rounded-2xl shadow-sm p-6">
+                <h2 className="text-2xl font-medium mb-6">About</h2>
+                <div className="flex items-center mb-6 bg-blue-50 p-4 rounded-xl">
+                  <div className="w-12 h-12 rounded-lg bg-blue-100 flex items-center justify-center mr-4">
+                    <Sparkles className="w-6 h-6 text-blue-600" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-medium">Powered by Gemini LLM</h3>
+                    <p className="text-gray-700">
+                      This system leverages Google's Gemini Large Language Model to process natural language queries and provide detailed budget insights.
+                    </p>
+                  </div>
+                </div>
+                
+                <p className="text-gray-700 mb-6">
+                  The Government Financial Budget Assistant is a powerful tool designed for government finance officers and analysts to query and analyze U.S. government budget data using natural language.
+                </p>
+                
+                <h3 className="text-lg font-medium mb-4">How It Works</h3>
+                <p className="text-gray-700 mb-6">
+                  The system uses a three-component architecture:
+                </p>
+                <ol className="list-decimal pl-5 space-y-2 mb-6">
+                  <li className="text-gray-700">
+                    <span className="font-medium">MCP Client (Frontend):</span> The user interface where you can submit natural language queries and view visualized results.
+                  </li>
+                  <li className="text-gray-700">
+                    <span className="font-medium">Gemini API Client:</span> Processes your natural language queries using Google's Gemini LLM to extract structured parameters.
+                  </li>
+                  <li className="text-gray-700">
+                    <span className="font-medium">MCP Server (Backend):</span> Retrieves and processes budget data from various U.S. government data sources based on the extracted parameters.
+                  </li>
+                </ol>
+                
+                <h3 className="text-lg font-medium mb-4">Data Sources</h3>
+                <p className="text-gray-700">
+                  The Government Financial Budget Assistant integrates with several authoritative U.S. government budget data sources including USASpending.gov API, Treasury.gov APIs, Data.gov Budget APIs, and Federal Reserve Economic Data (FRED).
+                </p>
+              </div>
+            </div>
+          )}
+        </main>
+
+        {/* AI Chat Panel */}
+        {showAiPanel && (
+          <div className="fixed right-0 top-16 bottom-0 w-96 bg-white border-l border-gray-200 shadow-sm flex flex-col">
+            <div className="flex items-center justify-between p-4 border-b border-gray-200">
+              <div className="flex items-center">
+                <div className="w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center mr-3">
+                  <Sparkles className="w-4 h-4 text-blue-600" />
+                </div>
+                <h3 className="font-medium">Budget Analysis Assistant</h3>
+              </div>
+              <button 
+                className="p-2 rounded-full hover:bg-gray-100 transition-colors"
+                onClick={() => setShowAiPanel(false)}
+              >
+                <X className="w-4 h-4 text-gray-500" />
+              </button>
+            </div>
+            
+            <div className="flex-1 overflow-y-auto p-4 space-y-4">
+              {aiConversation.map((message, index) => (
+                <div 
+                  key={index} 
+                  className={`flex ${message.role === 'assistant' ? 'justify-start' : 'justify-end'}`}
+                >
+                  <div 
+                    className={`max-w-3/4 p-3 rounded-2xl ${
+                      message.role === 'assistant' 
+                        ? 'bg-gray-100 text-gray-800 rounded-tl-none' 
+                        : 'bg-blue-500 text-white rounded-tr-none'
+                    }`}
+                  >
+                    {message.content}
+                  </div>
+                </div>
+              ))}
+            </div>
+            
+            <div className="p-4 border-t border-gray-200">
+              <div className="flex items-center">
+                <input
+                  type="text"
+                  className="flex-1 py-2 px-3 bg-gray-50 border border-gray-200 rounded-l-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  placeholder="Ask a follow-up question..."
+                  value={aiMessage}
+                  onChange={(e) => setAiMessage(e.target.value)}
+                  onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
+                />
+                <button
+                  className="bg-blue-500 text-white py-2 px-4 rounded-r-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                  onClick={handleSendMessage}
+                >
+                  <ArrowRight className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default App;
